@@ -9,13 +9,14 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <wifisettings.h>
 
 #define LED 2 //GPIO 2 = D4
 
 // замените значения в этих константах на те,
 // что соответствуют вашей сети:
-const char* ssid = "AndroidAPDeand";
-const char* password = "9036496d";
+//const char* ssid = "AndroidAPDeand";
+//const char* password = "9036496d";
 
 void setup() {
   Serial.begin(115200);
@@ -72,6 +73,9 @@ void setup() {
 }
 
 void loop() {
+  Serial.print("BeginLoop IP address: ");  //  "IP-адрес: "
+  Serial.println(WiFi.localIP());
+
   ArduinoOTA.handle();
   digitalWrite(LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
   Serial.println("LOW");
