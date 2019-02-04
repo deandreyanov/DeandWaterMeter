@@ -10,10 +10,12 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
+#define LED 2 //GPIO 2 = D4
+
 // замените значения в этих константах на те,
 // что соответствуют вашей сети:
-const char* ssid = "YOUR_SSID";
-const char* password = "YOUR_PASSWORD";
+const char* ssid = "AndroidAPDeand";
+const char* password = "9036496d";
 
 void setup() {
   Serial.begin(115200);
@@ -41,7 +43,6 @@ void setup() {
 
   ArduinoOTA.onStart([]() {
     Serial.println("Start");  //  "Начало OTA-апдейта"
-
   });
   ArduinoOTA.onEnd([]() {
     Serial.println("\nEnd");  //  "Завершение OTA-апдейта"
@@ -66,8 +67,18 @@ void setup() {
   Serial.println("Ready");  //  "Готово"
   Serial.print("IP address: ");  //  "IP-адрес: "
   Serial.println(WiFi.localIP());
+
+  pinMode(LED, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
 }
 
 void loop() {
   ArduinoOTA.handle();
+  digitalWrite(LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
+  Serial.println("LOW");
+    // but actually the LED is on; this is because
+    // it is active low on the ESP-01)
+  delay(1000);                      // Wait for a second
+  digitalWrite(LED, HIGH);  // Turn the LED off by making the voltage HIGH
+  Serial.println("HIGH");
+  delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
 }
