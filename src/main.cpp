@@ -6,9 +6,11 @@
 *********/
 
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
+#include <ESP8266HTTPUpdateServer.h>
+
 #include <wifisettings.h>
 
 #define LED 2 //GPIO 2 = D4
@@ -18,10 +20,18 @@
 //const char* ssid = "AndroidAPDeand";
 //const char* password = "9036496d";
 
+const char* host = "esp8266-webupdate";
+ESP8266WebServer httpServer(80);
+ESP8266HTTPUpdateServer httpUpdater;
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting");  //  "Загрузка"
-  WiFi.mode(WIFI_STA);
+  // WIFI_OFF = 0,
+  // WIFI_STA = 1 - клиент,
+  // WIFI_AP = 2 - точка доступа,
+  // WIFI_AP_STA = 3 - клиент и точка доступа
+  WiFi.mode(WIFI_AP_STA);
   WiFi.begin(ssid, password);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Connection Failed! Rebooting...");
@@ -42,6 +52,7 @@ void setup() {
   // (по умолчанию никакой аутентификации не будет):
   // ArduinoOTA.setPassword((const char *)"123");
 
+  /*
   ArduinoOTA.onStart([]() {
     Serial.println("Start");  //  "Начало OTA-апдейта"
   });
@@ -68,19 +79,30 @@ void setup() {
   Serial.println("Ready");  //  "Готово"
   Serial.print("IP address: ");  //  "IP-адрес: "
   Serial.println(WiFi.localIP());
+  */
+
+  MDNS.begin(host);
+
+  httpUpdater.setup(&httpServer);
+  httpServer.begin();
+
+  MDNS.addService("http", "tcp", 80);
+  Serial.printf("HTTPUpdateServer ready! Open http://%s.local/update in your browser\n", host);
+
+  Serial.print("IP address: ");  //  "IP-адрес: "
+  Serial.println(WiFi.localIP());
 
   pinMode(LED, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
 }
 
 void loop() {
-  Serial.print("BeginLoop IP address: ");  //  "IP-адрес: "
-  Serial.println(WiFi.localIP());
 
-  ArduinoOTA.handle();
+  //ArduinoOTA.handle();
+  httpServer.handleClient();
+  MDNS.update();
+
   digitalWrite(LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
   Serial.println("LOW");
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
   delay(1000);                      // Wait for a second
   digitalWrite(LED, HIGH);  // Turn the LED off by making the voltage HIGH
   Serial.println("HIGH");
