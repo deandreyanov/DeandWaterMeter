@@ -14,6 +14,9 @@
 #include <wifisettings.h>
 
 #define LED 2 //GPIO 2 = D4
+#define HOT_INPUT 5 //GPIO 5 = D1
+#define COLD_INPUT 4 //GPIO 4 = D2
+#define SETT_INPUT 4 //GPIO 4 = D2
 
 // замените значения в этих константах на те,
 // что соответствуют вашей сети:
@@ -93,6 +96,10 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   pinMode(LED, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+  pinMode(COLD_INPUT, INPUT);
+  pinMode(HOT_INPUT, INPUT);
+  pinMode(SETT_INPUT, INPUT);
+  Serial.println(digitalRead(SETT_INPUT));
 }
 
 void loop() {
@@ -107,4 +114,7 @@ void loop() {
   digitalWrite(LED, HIGH);  // Turn the LED off by making the voltage HIGH
   Serial.println("HIGH");
   delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
+  Serial.println(digitalRead(COLD_INPUT));
+  Serial.println(digitalRead(HOT_INPUT));
+  Serial.println(digitalRead(SETT_INPUT));
 }
