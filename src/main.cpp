@@ -16,7 +16,7 @@
 #define LED 2 //GPIO 2 = D4
 #define HOT_INPUT 5 //GPIO 5 = D1
 #define COLD_INPUT 4 //GPIO 4 = D2
-#define SETT_INPUT 4 //GPIO 4 = D2
+//#define SETT_INPUT 4 //GPIO 4 = D2
 
 // замените значения в этих константах на те,
 // что соответствуют вашей сети:
@@ -26,6 +26,16 @@
 const char* host = "esp8266-webupdate";
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
+
+float read_state(int PinNumber)
+{
+  float state;
+  pinMode(PinNumber, OUTPUT);
+  digitalWrite(PinNumber, HIGH);
+  state = digitalRead(PinNumber);
+  digitalWrite(PinNumber, LOW);
+  return state;
+}
 
 void setup() {
   Serial.begin(115200);
@@ -96,10 +106,12 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   pinMode(LED, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-  pinMode(COLD_INPUT, INPUT);
-  pinMode(HOT_INPUT, INPUT);
-  pinMode(SETT_INPUT, INPUT);
-  Serial.println(digitalRead(SETT_INPUT));
+//  pinMode(COLD_INPUT, INPUT);
+//  pinMode(HOT_INPUT, INPUT);
+//  pinMode(SETT_INPUT, INPUT);
+  Serial.println("Setup");
+  Serial.println(read_state(COLD_INPUT));
+  Serial.println(read_state(HOT_INPUT));
 }
 
 void loop() {
@@ -107,14 +119,18 @@ void loop() {
   //ArduinoOTA.handle();
   httpServer.handleClient();
   MDNS.update();
-
+/*
   digitalWrite(LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
   Serial.println("LOW");
   delay(1000);                      // Wait for a second
   digitalWrite(LED, HIGH);  // Turn the LED off by making the voltage HIGH
   Serial.println("HIGH");
   delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
-  Serial.println(digitalRead(COLD_INPUT));
-  Serial.println(digitalRead(HOT_INPUT));
-  Serial.println(digitalRead(SETT_INPUT));
+  */
+  Serial.println("Loop");
+  Serial.println(read_state(COLD_INPUT));
+  Serial.println(read_state(HOT_INPUT));
+  Serial.println("------------------------");
+  //Serial.println(read_state(SETT_INPUT));
+  ESP.deepSleep(5e06);  
 }
