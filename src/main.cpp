@@ -10,6 +10,7 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPUpdateServer.h>
+#include <BlynkSimpleEsp8266.h>
 
 #include <wifisettings.h>
 
@@ -18,14 +19,16 @@
 #define COLD_INPUT 4 //GPIO 4 = D2
 //#define SETT_INPUT 4 //GPIO 4 = D2
 
-// замените значения в этих константах на те,
-// что соответствуют вашей сети:
-//const char* ssid = "AndroidAPDeand";
-//const char* password = "9036496d";
+#define ESP_CONNECT_TIMEOUT 15000UL // Время подключения к точке доступа, ms
+#define SERVER_TIMEOUT 12000UL // Время ответа сервера, ms
+#define LITRES_PER_IMPULS_DEFAULT 10  // 10 литров на импульс
 
+int i;
 const char* host = "esp8266-webupdate";
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
+
+WidgetLCD lcd(V1);
 
 float read_state(int PinNumber)
 {
@@ -38,6 +41,7 @@ float read_state(int PinNumber)
 }
 
 void setup() {
+  i = 0;
   Serial.begin(115200);
   Serial.println("Booting");  //  "Загрузка"
   // WIFI_OFF = 0,
@@ -115,7 +119,7 @@ void setup() {
 }
 
 void loop() {
-
+  i = i + 1;
   //ArduinoOTA.handle();
   httpServer.handleClient();
   MDNS.update();
@@ -132,5 +136,25 @@ void loop() {
   Serial.println(read_state(HOT_INPUT));
   Serial.println("------------------------");
   //Serial.println(read_state(SETT_INPUT));
-  ESP.deepSleep(5e06);  
+
+  Blynk.config(auth);
+  if (Blynk.connect(SERVER_TIMEOUT))
+  {
+    Serial.println("Blynk.connect");
+
+    //lcd.clear(); //Use it to clear the LCD Widget
+    lcd.print(0, 0, i); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+    lcd.print(0, 1, i);
+    Blynk.run();
+
+
+    //Blynk.disconnect();
+    Serial.println(i);
+
+  } else {
+      Serial.println("Blynk.connect error");
+  }
+
+  //ESP.deepSleep(5e06);
+  delay(5000);
 }
