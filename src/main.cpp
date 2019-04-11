@@ -133,6 +133,8 @@ void setup() {
 
   MDNS.addService("http", "tcp", 80);
   Serial.printf("HTTPUpdateServer ready! Open http://%s.local/update in your browser\n", host);
+  //Open http://esp8266-webupdate.local/update in your browser
+  //IP address: 192.168.31.214
 
   Serial.print("IP address: ");  //  "IP-адрес: "
   Serial.println(WiFi.localIP());
@@ -154,8 +156,8 @@ void send_2_blynk()
     lcd.clear(); //Use it to clear the LCD Widget
     lcd.print(0, 0, save_cold); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
     lcd.print(0, 1, save_hot);
-    Serial.println(save_cold);
-    Serial.println(save_hot);
+    //Serial.println(save_cold);
+    //Serial.println(save_hot);
 
   } else {
       Serial.println("Blynk.connect error");
@@ -171,10 +173,10 @@ void loop() {
   curr_cold = read_state(COLD_INPUT);
   curr_hot = read_state(HOT_INPUT);
 
-  Serial.println("------------------------");
+  /*Serial.println("------------------------");
   Serial.println(curr_cold);
   Serial.println(curr_hot);
-
+*/
   //Serial.println(read_state(SETT_INPUT));
 
   if (prev_cold != curr_cold) {
@@ -191,19 +193,6 @@ void loop() {
     prev_hot = curr_hot;
   }
   send_2_blynk();
-/*
-  if (Blynk.connect(SERVER_TIMEOUT)){
-    //Serial.println("Blynk.connect");
-
-    lcd.clear(); //Use it to clear the LCD Widget
-    lcd.print(0, 0, save_cold); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
-    lcd.print(0, 1, save_hot);
-    Serial.println(save_cold);
-    Serial.println(save_hot);
-
-  } else {
-      Serial.println("Blynk.connect error");
-  }*/
 
   //ESP.deepSleep(5e06);
   delay(5000);
