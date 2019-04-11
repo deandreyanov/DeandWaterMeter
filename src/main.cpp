@@ -145,9 +145,25 @@ void setup() {
   Serial.println(read_state(COLD_INPUT));
   Serial.println(read_state(HOT_INPUT));
 }
+void send_2_blynk()
+{
+  Blynk.run();
+  if (Blynk.connect(SERVER_TIMEOUT)){
+    //Serial.println("Blynk.connect");
+
+    lcd.clear(); //Use it to clear the LCD Widget
+    lcd.print(0, 0, save_cold); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+    lcd.print(0, 1, save_hot);
+    Serial.println(save_cold);
+    Serial.println(save_hot);
+
+  } else {
+      Serial.println("Blynk.connect error");
+  }
+}
 
 void loop() {
-  Blynk.run();
+  //Blynk.run();
   //ArduinoOTA.handle();
   httpServer.handleClient();
   MDNS.update();
@@ -174,7 +190,8 @@ void loop() {
     }
     prev_hot = curr_hot;
   }
-
+  send_2_blynk();
+/*
   if (Blynk.connect(SERVER_TIMEOUT)){
     //Serial.println("Blynk.connect");
 
@@ -186,7 +203,7 @@ void loop() {
 
   } else {
       Serial.println("Blynk.connect error");
-  }
+  }*/
 
   //ESP.deepSleep(5e06);
   delay(5000);
