@@ -1,3 +1,14 @@
+// Описание Blynk
+// https://the-robot.ru/study/nodemcu-blynk-uroki-1-ustrojsva-vyvoda/
+/* Для работы с LCD Blynk надо настроить в приложении Blynk
+  LCD widget, switch to ADVANCED mode, select pin V1
+  Создать WidgetLCD lcd(V1)
+  Для работы в режиме сохранения энергии надо соединить D0 с RST и вызывать
+  ESP.deepSleep(5e06)
+
+  TODO
+  Для измерения заряда аккумулятора надо на + посадить одну из ног с считывать значение
+*/
 /*********
   Руи Сантос (Rui Santos)
   Более подробно о проекте на: http://randomnerdtutorials.com
@@ -23,15 +34,25 @@
 #define SERVER_TIMEOUT 12000UL // Время ответа сервера, ms
 #define LITRES_PER_IMPULS_DEFAULT 10  // 10 литров на импульс
 
-int i;
+// предыдущее состояние импульсного выхода
+int prev_cold;
+int prev_hot;
+
+// текущее состояние импульсного выхода
+int curr_cold;
+int curr_hot;
+
+// сохранённые показания счётчиков
+float save_cold;
+float save_hot;
+
 const char* host = "esp8266-webupdate";
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
 WidgetLCD lcd(V1);
 
-float read_state(int PinNumber)
-{
+float read_state(int PinNumber) {
   float state;
   pinMode(PinNumber, OUTPUT);
   digitalWrite(PinNumber, HIGH);
@@ -41,7 +62,12 @@ float read_state(int PinNumber)
 }
 
 void setup() {
-  i = 0;
+  save_cold = 0;
+  save_hot = 0;
+
+  prev_cold = 0;
+  prev_hot = 0;
+
   Serial.begin(115200);
   Serial.println("Booting");  //  "Загрузка"
   // WIFI_OFF = 0,
@@ -56,6 +82,8 @@ void setup() {
     delay(5000);
     ESP.restart();
   }
+
+  Blynk.config(auth);
 
   // строчка для номера порта по умолчанию
   // можно вписать «8266»:
@@ -119,37 +147,42 @@ void setup() {
 }
 
 void loop() {
-  i = i + 1;
+  Blynk.run();
   //ArduinoOTA.handle();
   httpServer.handleClient();
   MDNS.update();
-/*
-  digitalWrite(LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-  Serial.println("LOW");
-  delay(1000);                      // Wait for a second
-  digitalWrite(LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  Serial.println("HIGH");
-  delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
-  */
-  Serial.println("Loop");
-  Serial.println(read_state(COLD_INPUT));
-  Serial.println(read_state(HOT_INPUT));
+
+  curr_cold = read_state(COLD_INPUT);
+  curr_hot = read_state(HOT_INPUT);
+
   Serial.println("------------------------");
+  Serial.println(curr_cold);
+  Serial.println(curr_hot);
+
   //Serial.println(read_state(SETT_INPUT));
 
-  Blynk.config(auth);
-  if (Blynk.connect(SERVER_TIMEOUT))
-  {
-    Serial.println("Blynk.connect");
+  if (prev_cold != curr_cold) {
+    if (curr_cold == 0) {
+      save_cold = save_cold + LITRES_PER_IMPULS_DEFAULT; // / 1000;
+    }
+    prev_cold = curr_cold;
+  }
 
-    //lcd.clear(); //Use it to clear the LCD Widget
-    lcd.print(0, 0, i); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
-    lcd.print(0, 1, i);
-    Blynk.run();
+  if (prev_hot != curr_hot) {
+    if (curr_hot == 0) {
+      save_hot = save_hot + LITRES_PER_IMPULS_DEFAULT;// / 1000;
+    }
+    prev_hot = curr_hot;
+  }
 
+  if (Blynk.connect(SERVER_TIMEOUT)){
+    //Serial.println("Blynk.connect");
 
-    //Blynk.disconnect();
-    Serial.println(i);
+    lcd.clear(); //Use it to clear the LCD Widget
+    lcd.print(0, 0, save_cold); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+    lcd.print(0, 1, save_hot);
+    Serial.println(save_cold);
+    Serial.println(save_hot);
 
   } else {
       Serial.println("Blynk.connect error");
