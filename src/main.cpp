@@ -15,7 +15,6 @@
   Пример в IDE Arduino: File > Examples > Arduino OTA > BasicOTA.ino
                        (Файл > Примеры > Arduino OTA > BasicOTA.ino)
 *********/
-
 #include <settings.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
@@ -50,6 +49,8 @@ ESP8266HTTPUpdateServer httpUpdater;
 WidgetLCD lcd(V1);
 
 strSettings mySett;
+
+void send_2_blynk();
 
 int read_state(int PinNumber) {
   float state;
@@ -105,6 +106,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   pinMode(LED, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+  send_2_blynk();
 }
 // Отправка показаний на Blynk
 void send_2_blynk() {
@@ -130,7 +132,12 @@ void loop() {
 
   if (prev_cold != curr_cold) {
     if (curr_cold == 0) {
+      digitalWrite(LED, HIGH);
       mySett.save_cold += LITRES_PER_IMPULS_DEFAULT;
+      saveSettings(mySett);
+      send_2_blynk();
+    }else{
+      digitalWrite(LED, LOW);
     }
     prev_cold = curr_cold;
   }
@@ -138,12 +145,13 @@ void loop() {
   if (prev_hot != curr_hot) {
     if (curr_hot == 0) {
       mySett.save_hot += LITRES_PER_IMPULS_DEFAULT;
+      saveSettings(mySett);
+      send_2_blynk();
     }
     prev_hot = curr_hot;
   }
-  saveSettings(mySett);
-  send_2_blynk();
+
 
   //ESP.deepSleep(5e06);
-  delay(5000);
+  delay(1000);
 }
