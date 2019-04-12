@@ -16,6 +16,7 @@
                        (Файл > Примеры > Arduino OTA > BasicOTA.ino)
 *********/
 
+#include <settings.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -29,11 +30,11 @@
 #define HOT_INPUT 5 //GPIO 5 = D1
 #define COLD_INPUT 4 //GPIO 4 = D2
 //#define SETT_INPUT 4 //GPIO 4 = D2
-
+/*
 #define ESP_CONNECT_TIMEOUT 15000UL // Время подключения к точке доступа, ms
 #define SERVER_TIMEOUT 12000UL // Время ответа сервера, ms
 #define LITRES_PER_IMPULS_DEFAULT 10  // 10 литров на импульс
-
+*/
 // предыдущее состояние импульсного выхода
 int prev_cold;
 int prev_hot;
