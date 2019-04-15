@@ -14,8 +14,8 @@ void saveSettings(strSettings &sett) {
     }
 }
 
-#define SET_FIRST_SETTINGS 0 // Если 1 - первое включение и надо задать начальные значения
-#define FIRST_COLD 72.581
+#define SET_FIRST_SETTINGS 1 // Если 1 - первое включение и надо задать начальные значения
+#define FIRST_COLD 72.951
 #define FIRST_HOT 0.001
 
 /* Загружаем конфигурацию в EEPROM. true - успех. */
