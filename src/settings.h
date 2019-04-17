@@ -21,6 +21,11 @@ struct strSettings {
     */
     float save_cold;
     float save_hot;
+    int prev_cold;
+    int prev_hot;
+    long num_period;
+    int led_is_on;
+
     int myCRC;
 };
 

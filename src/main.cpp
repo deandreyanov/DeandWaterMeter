@@ -30,7 +30,7 @@ TODO
 #define HOT_INPUT 5 //GPIO 5 = D1
 //#define SETT_INPUT 4 //GPIO 4 = D2
 
-int OnePeriod; // меняется каждый период цикла
+long num_period; // инкрементируется каждый период цикла
 int LED_IS_ON; // 1 - светодиод включен
 
 // предыдущее состояние импульсного выхода
@@ -45,9 +45,11 @@ int curr_hot;
 float save_cold;
 float save_hot;
 
+/*
 const char* host = "esp8266-webupdate";
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
+*/
 
 WidgetLCD lcd1(V1);
 WidgetLCD lcd2(V2);
@@ -89,14 +91,14 @@ void print_on_LCD(int numLCD, int X, int Y, bool bClear, const T& mystr) {
 void send_2_blynk(int numLCD) {
   Blynk.run();
   if (numLCD  == 1) {
-    lcd1.clear();
+    //lcd1.clear();
     lcd1.print(0, 0, "C:"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
     lcd1.print(0, 1, "H:");
 
     lcd1.print(2, 0, mySett.save_cold); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
     lcd1.print(2, 1, mySett.save_hot);
   } else if (numLCD == 2) {
-    lcd2.clear();
+    //lcd2.clear();
     lcd2.print(0, 0, "C:"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
     lcd2.print(0, 1, "H:");
 
@@ -138,7 +140,6 @@ int read_state(int PinNumber) {
 //
 //-------------------------------------------
 void setup() {
-  OnePeriod = 0;
   if (loadSettings(mySett)) {
 
   } else {
@@ -148,8 +149,8 @@ void setup() {
   save_cold = 0;
   save_hot = 0;
 
-  prev_cold = 0;
-  prev_hot = 0;
+  prev_cold = mySett.prev_cold;
+  prev_hot = mySett.prev_hot;
 
   Serial.begin(115200);
   print_2_serial("Booting");  //  "Загрузка"
@@ -157,6 +158,8 @@ void setup() {
   // WIFI_STA = 1 - клиент,
   // WIFI_AP = 2 - точка доступа,
   // WIFI_AP_STA = 3 - клиент и точка доступа
+
+  /*
   WiFi.mode(WIFI_AP_STA);
   WiFi.begin(ssid, password);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -178,9 +181,9 @@ void setup() {
 
   print_2_serial("IP address: ");  //  "IP-адрес: "
   print_2_serial(WiFi.localIP());
-
+*/
   pinMode(LED, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-  Blynk.run();
+//  Blynk.run();
   send_2_blynk(NUM_LCD);
 }
 
@@ -189,58 +192,64 @@ void setup() {
 //-------------------------------------------
 void loop() {
   print_2_serial("Begin.loop");
-  httpServer.handleClient();
-  MDNS.update();
+//  httpServer.handleClient();
+//  MDNS.update();
+
+  Blynk.connectWiFi(ssid, password);
+  Blynk.config(auth);
+  Blynk.run();
 
   curr_cold = read_state(COLD_INPUT);
   curr_hot = read_state(HOT_INPUT);
+
+  prev_cold = mySett.prev_cold;
+  prev_hot = mySett.prev_hot;
+
+  //num_period = mySett.num_period;
+  mySett.num_period += 1;
 
   if (prev_cold != curr_cold) {
     if (curr_cold == 0) {
       ledON();
       mySett.save_cold += LITRES_PER_IMPULS_DEFAULT;
-      saveSettings(mySett);
       //send_2_blynk(NUM_LCD);
     } else {
       ledOFF();
     }
     prev_cold = curr_cold;
+    mySett.prev_cold = prev_cold;
+    //saveSettings(mySett);
   }
 
   if (prev_hot != curr_hot) {
     if (curr_hot == 0) {
       ledON();
       mySett.save_hot += LITRES_PER_IMPULS_DEFAULT;
-      saveSettings(mySett);
       //send_2_blynk(NUM_LCD);
     } else {
       ledOFF();
     }
     prev_hot = curr_hot;
+    mySett.prev_hot = prev_hot;
+    //saveSettings(mySett);
   }
 
-  if (OnePeriod == 0) {
-    OnePeriod = 1;
-    send_2_blynk(NUM_LCD);
+  if ((mySett.num_period % 2) == 0) {
     print_on_LCD(NUM_LCD, 15, 1, false, "*");
-
-    if (LED_IS_ON == 1) {
-      LED_IS_ON = 0;
-    } else {
-      ledOFF();
-    }
-
   } else {
-    OnePeriod = 0;
     print_on_LCD(NUM_LCD, 15, 1, false, "0");
-
-    if (LED_IS_ON == 1) {
-      LED_IS_ON = 0;
-    } else {
-      ledOFF();
-    }
-    
   }
+
+  if (mySett.led_is_on == 1) {
+    mySett.led_is_on = 0;
+  } else {
+    ledOFF();
+  }
+
+  send_2_blynk(NUM_LCD);
+
+  saveSettings(mySett);
+
   //ESP.deepSleep(5e06);
   delay(1000);
   print_2_serial("End.loop");
