@@ -25,10 +25,10 @@ TODO
 
 #include <wifisettings.h>
 
-#define LED 2 //GPIO 2 = D4
-#define COLD_INPUT 4 //GPIO 4 = D2
-#define HOT_INPUT 5 //GPIO 5 = D1
-//#define SETT_INPUT 4 //GPIO 4 = D2
+#define LED 2           //GPIO 2 = D4
+#define COLD_INPUT 4    //GPIO 4 = D2
+#define HOT_INPUT 5     //GPIO 5 = D1
+//#define SETT_INPUT 4  //GPIO 4 = D2
 
 long num_period; // инкрементируется каждый период цикла
 int LED_IS_ON; // 1 - светодиод включен

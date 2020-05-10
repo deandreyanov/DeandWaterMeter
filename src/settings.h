@@ -4,7 +4,7 @@
 /*
     Уровень логирования
 */
-#define LOGLEVEL 6
+// #define LOGLEVEL 6
 
 #define ESP_CONNECT_TIMEOUT 15000UL // Время подключения к точке доступа, ms
 #define SERVER_TIMEOUT 12000UL // Время ответа сервера, ms
